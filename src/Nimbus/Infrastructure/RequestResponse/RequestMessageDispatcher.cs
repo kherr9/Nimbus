@@ -62,8 +62,24 @@ namespace Nimbus.Infrastructure.RequestResponse
             Exception exception = null;
             using (var scope = _dependencyResolver.CreateChildScope())
             {
+                var globalInterceptors = _inboundInterceptorFactory.CreateGlobalInterceptors(scope);
+                foreach (var globalInterceptor in globalInterceptors)
+                {
+                    _logger.Debug("Executing OnRequestHandlerExecuting on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                    await globalInterceptor.OnRequestHandlerExecuting(busRequest, message);
+                    _logger.Debug("Executed OnRequestHandlerExecuting on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                }
+
                 var handler = scope.Resolve<IHandleRequest<TBusRequest, TBusResponse>>(handlerType.FullName);
-                var interceptors = _inboundInterceptorFactory.CreateInterceptors(scope, handler, busRequest);
+                var interceptors = _inboundInterceptorFactory.CreateHandlerInterceptors(scope, handler, busRequest);
 
                 try
                 {
@@ -124,6 +140,23 @@ namespace Nimbus.Infrastructure.RequestResponse
                         message.MessageId,
                         message.CorrelationId);
                     }
+
+                    foreach (var globalInterceptor in globalInterceptors.Reverse())
+                    {
+                        _logger.Debug("Executing OnRequestHandlerSuccess on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+
+                        await globalInterceptor.OnRequestHandlerSuccess(busRequest, message);
+
+                        _logger.Debug("Executed OnRequestHandlerSuccess on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                    }
                 }
                 else
                 {
@@ -143,6 +176,23 @@ namespace Nimbus.Infrastructure.RequestResponse
                         message.MessageId,
                         message.CorrelationId);
 
+                    }
+
+                    foreach (var globalInterceptor in globalInterceptors.Reverse())
+                    {
+                        _logger.Debug("Executing OnRequestHandlerError on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+
+                        await globalInterceptor.OnRequestHandlerError(busRequest, message, exception);
+
+                        _logger.Debug("Executed OnRequestHandlerError on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
                     }
 
                     var failedResponseMessage =

@@ -51,8 +51,24 @@ namespace Nimbus.Infrastructure.Commands
         {
             using (var scope = _dependencyResolver.CreateChildScope())
             {
+                var globalInterceptors = _inboundInterceptorFactory.CreateGlobalInterceptors(scope);
+                foreach (var globalInterceptor in globalInterceptors)
+                {
+                    _logger.Debug("Executing OnCommandHandlerExecuting on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                    await globalInterceptor.OnCommandHandlerExecuting(busCommand, message);
+                    _logger.Debug("Executed OnCommandHandlerExecuting on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                }
+
                 var handler = scope.Resolve<IHandleCommand<TBusCommand>>(handlerType.FullName);
-                var interceptors = _inboundInterceptorFactory.CreateInterceptors(scope, handler, busCommand);
+                var interceptors = _inboundInterceptorFactory.CreateHandlerInterceptors(scope, handler, busCommand);
 
                 Exception exception;
                 try
@@ -92,6 +108,24 @@ namespace Nimbus.Infrastructure.Commands
                         message.MessageId,
                         message.CorrelationId);
                     }
+
+                    foreach (var globalInterceptor in globalInterceptors.Reverse())
+                    {
+                        _logger.Debug("Executing OnCommandHandlerSuccess on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+
+                        await globalInterceptor.OnCommandHandlerSuccess(busCommand, message);
+
+                        _logger.Debug("Executed OnCommandHandlerSuccess on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                    }
+
                     return;
                 }
                 catch (Exception exc)
@@ -115,6 +149,23 @@ namespace Nimbus.Infrastructure.Commands
                         message.MessageId,
                         message.CorrelationId);
 
+                }
+
+                foreach (var globalInterceptor in globalInterceptors.Reverse())
+                {
+                    _logger.Debug("Executing OnCommandHandlerError on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+
+                    await globalInterceptor.OnCommandHandlerError(busCommand, message, exception);
+
+                    _logger.Debug("Executed OnCommandHandlerError on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
                 }
 
                 _logger.Debug("Failed to Dispatch CommandMessage for message [MessageType:{0}, MessageId:{1}, CorrelationId:{2}]",

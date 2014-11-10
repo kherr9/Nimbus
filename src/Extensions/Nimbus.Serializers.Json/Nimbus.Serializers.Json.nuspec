@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Nimbus.Serializers.Json</id>
+    <id>MLevel.Nimbus.Serializers.Json</id>
     <version>$version$</version>
-    <title>Nimbus.Serializers.Json</title>
+    <title>MLevel Nimbus.Serializers.Json</title>
     <authors>Gert Jansen van Rensburg</authors>
     <owners>Damian Maclennan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -13,7 +13,7 @@
     <tags>azure servicebus json.net</tags>
     <projectUrl>http://nimbusapi.github.io/</projectUrl>
     <dependencies>
-      <dependency id="Newtonsoft.Json" />
+      <dependency id="Newtonsoft.Json" version="6.0.0"/>
     </dependencies>
   </metadata>
 </package>

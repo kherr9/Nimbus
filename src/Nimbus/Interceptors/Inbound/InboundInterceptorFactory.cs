@@ -36,6 +36,38 @@ namespace Nimbus.Interceptors.Inbound
             return interceptors;
         }
 
+        public IInboundInterceptor[] CreateGlobalInterceptors(IDependencyResolverScope scope)
+        {
+            var globalInterceptors = GetGlobalInterceptorTypes();
+
+            var interceptors = new Type[0]
+                .Union(globalInterceptors)
+                .DistinctBy(t => t.FullName)
+                .Select(t => (IInboundInterceptor)scope.Resolve(t, t.FullName))
+                .OrderByDescending(i => i.Priority)
+                .ThenBy(i => i.GetType().FullName)
+                .ToArray();
+
+            return interceptors;
+        }
+
+        public IInboundInterceptor[] CreateHandlerInterceptors(IDependencyResolverScope scope, object handler, object message)
+        {
+            var classLevelInterceptors = GetClassLevelInterceptorTypes(handler);
+            var methodLevelInterceptors = GetMethodLevelInterceptorTypes(handler, message);
+
+            var interceptors = new Type[0]
+                .Union(classLevelInterceptors)
+                .Union(methodLevelInterceptors)
+                .DistinctBy(t => t.FullName)
+                .Select(t => (IInboundInterceptor)scope.Resolve(t, t.FullName))
+                .OrderByDescending(i => i.Priority)
+                .ThenBy(i => i.GetType().FullName)
+                .ToArray();
+
+            return interceptors;
+        }
+
         private IEnumerable<Type> GetGlobalInterceptorTypes()
         {
             var globalInterceptorTypes = _globalInboundInterceptorTypes.Value.ToArray();

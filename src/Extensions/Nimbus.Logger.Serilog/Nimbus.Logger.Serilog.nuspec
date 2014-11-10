@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Nimbus.Logger.Serilog</id>
+    <id>MLevel.Nimbus.Logger.Serilog</id>
     <version>$version$</version>
-    <title>Nimbus.Logger.Serilog</title>
+    <title>MLevel Nimbus.Logger.Serilog</title>
     <authors>Nicholas Blumhardt</authors>
     <owners>Damian Maclennan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

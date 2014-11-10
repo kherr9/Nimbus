@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Nimbus.MessageContracts</id>
+    <id>MLevel.Nimbus.MessageContracts</id>
     <version>$version$</version>
-    <title>Nimbus.MessageContracts</title>
+    <title>MLevel Nimbus.MessageContracts</title>
     <authors>Damian Maclennan and Andrew Harcourt</authors>
     <owners>Damian Maclennan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

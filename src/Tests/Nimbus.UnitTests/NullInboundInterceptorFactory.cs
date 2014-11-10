@@ -10,5 +10,15 @@ namespace Nimbus.UnitTests
         {
             return new IInboundInterceptor[0];
         }
+
+        public IInboundInterceptor[] CreateGlobalInterceptors(IDependencyResolverScope scope)
+        {
+            return new IInboundInterceptor[0];
+        }
+
+        public IInboundInterceptor[] CreateHandlerInterceptors(IDependencyResolverScope scope, object handler, object message)
+        {
+            return new IInboundInterceptor[0];
+        }
     }
 }

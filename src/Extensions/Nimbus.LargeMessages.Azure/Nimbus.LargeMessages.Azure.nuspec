@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Nimbus.LargeMessages.Azure</id>
+    <id>MLevel.Nimbus.LargeMessages.Azure</id>
     <version>$version$</version>
-    <title>Nimbus.LargeMessages.Azure</title>
+    <title>MLevel Nimbus.LargeMessages.Azure</title>
     <authors>Damian Maclennan and Andrew Harcourt</authors>
     <owners>Damian Maclennan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

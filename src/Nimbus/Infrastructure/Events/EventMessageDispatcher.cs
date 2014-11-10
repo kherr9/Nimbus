@@ -53,8 +53,26 @@ namespace Nimbus.Infrastructure.Events
         {
             using (var scope = _dependencyResolver.CreateChildScope())
             {
+                var globalInterceptors = _inboundInterceptorFactory.CreateGlobalInterceptors(scope);
+                foreach (var globalInterceptor in globalInterceptors)
+                {
+                    _logger.Debug("Executing OnEventHandlerExecuting on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+
+                    await globalInterceptor.OnEventHandlerExecuting(busEvent, message);
+
+                    _logger.Debug("Executed OnEventHandlerExecuting on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                }
+
                 var handler = CreateHandlerFromScope(scope, busEvent, handlerType);
-                var interceptors = _inboundInterceptorFactory.CreateInterceptors(scope, handler, busEvent);
+                var interceptors = _inboundInterceptorFactory.CreateHandlerInterceptors(scope, handler, busEvent);
 
                 Exception exception;
                 try
@@ -96,6 +114,24 @@ namespace Nimbus.Infrastructure.Events
                         message.MessageId,
                         message.CorrelationId);
                     }
+
+                    foreach (var globalInterceptor in globalInterceptors.Reverse())
+                    {
+                        _logger.Debug("Executing OnEventHandlerSuccess on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+
+                        await globalInterceptor.OnEventHandlerSuccess(busEvent, message);
+
+                        _logger.Debug("Executed OnEventHandlerSuccess on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                    }
+
                     return;
                 }
                 catch (Exception exc)
@@ -115,6 +151,23 @@ namespace Nimbus.Infrastructure.Events
 
                     _logger.Debug("Executed OnEventHandlerError on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
                         interceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+                }
+
+                foreach (var globalInterceptor in globalInterceptors.Reverse())
+                {
+                    _logger.Debug("Executing OnEventHandlerError on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
+                        message.SafelyGetBodyTypeNameOrDefault(),
+                        message.MessageId,
+                        message.CorrelationId);
+
+                    await globalInterceptor.OnEventHandlerError(busEvent, message, exception);
+
+                    _logger.Debug("Executed OnEventHandlerError on {0} for message [MessageType:{1}, MessageId:{2}, CorrelationId:{3}]",
+                        globalInterceptor.GetType().FullName,
                         message.SafelyGetBodyTypeNameOrDefault(),
                         message.MessageId,
                         message.CorrelationId);
